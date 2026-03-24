@@ -1,0 +1,551 @@
+{
+  "_comment": "ROI 定義ファイル。rect は [x, y, w, h] のクライアント座標。TBD は [0, 0, 0, 0] としてある（実機確認後に更新）。",
+  "rois": [
+    {
+      "id": "ultimate_synthesis_label",
+      "description": "「究極錬成」文字（S1 識別）",
+      "rect": [
+        81,
+        10,
+        140,
+        60
+      ],
+      "template": "ui/s1_ultimate_synthesis_label.png",
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_equipment_name",
+      "description": "装備名テキスト領域（S1）",
+      "rect": [
+        145,
+        105,
+        330,
+        30
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_equipment_icon",
+      "description": "錬金窯エリアに表示される選択中装備のアイコン画像。装備識別のテンプレートマッチングに使用。",
+      "rect": [
+        245,
+        460,
+        98,
+        98
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_equipment_element",
+      "description": "装備名の属性文字（「黎明」の直後、火/水/風/光/闇）。属性アクセサリーの2段階マッチング用。",
+      "rect": [
+        191,
+        108,
+        23,
+        23
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_equipment_charm_name",
+      "description": "属性アクセサリーのカタカナ名部分（「黎明{属性}{種別}」の4文字後）。5属性で共通テンプレートに使用。",
+      "rect": [
+        237,
+        107,
+        234,
+        25
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_slot_0",
+      "description": "サブステータス枠 0（左上）",
+      "rect": [
+        44,
+        315,
+        245,
+        30
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_slot_1",
+      "description": "サブステータス枠 1（右上）",
+      "rect": [
+        300,
+        315,
+        245,
+        30
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_slot_2",
+      "description": "サブステータス枠 2（左下）",
+      "rect": [
+        44,
+        352,
+        245,
+        30
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_slot_3",
+      "description": "サブステータス枠 3（右下）",
+      "rect": [
+        300,
+        352,
+        245,
+        30
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_name_0",
+      "description": "サブステータス枠 0 の効果名領域（上下 3px 削り、x+1、幅 115px）",
+      "rect": [
+        45,
+        318,
+        115,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_value_0",
+      "description": "サブステータス枠 0 の効果値領域（上下 3px 削り、左から 176px 開けて右 2px 削り）",
+      "rect": [
+        220,
+        318,
+        67,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_name_1",
+      "description": "サブステータス枠 1 の効果名領域（上下 3px 削り、x+1、幅 115px）",
+      "rect": [
+        301,
+        318,
+        115,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_value_1",
+      "description": "サブステータス枠 1 の効果値領域（上下 3px 削り、左から 176px 開けて右 2px 削り）",
+      "rect": [
+        476,
+        318,
+        67,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_name_2",
+      "description": "サブステータス枠 2 の効果名領域（上下 3px 削り、x+1、幅 115px）",
+      "rect": [
+        45,
+        355,
+        115,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_value_2",
+      "description": "サブステータス枠 2 の効果値領域（上下 3px 削り、左から 176px 開けて右 2px 削り）",
+      "rect": [
+        220,
+        355,
+        67,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_name_3",
+      "description": "サブステータス枠 3 の効果名領域（上下 3px 削り、x+1、幅 115px）",
+      "rect": [
+        301,
+        355,
+        115,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_substat_value_3",
+      "description": "サブステータス枠 3 の効果値領域（上下 3px 削り、左から 176px 開けて右 2px 削り）",
+      "rect": [
+        476,
+        355,
+        67,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "btn_synthesize",
+      "description": "「錬成」青ボタン（S1）",
+      "rect": [
+        920,
+        543,
+        214,
+        60
+      ],
+      "template": "ui/buttons/s1_synthesize.png",
+      "screen": "S1",
+      "clickable": true
+    },
+    {
+      "id": "btn_synthesize_disabled",
+      "description": "「錬成」ボタン非活性状態（全枠ロック済み装備選択時）",
+      "rect": [
+        920,
+        543,
+        214,
+        60
+      ],
+      "template": "ui/buttons/s1_synthesize_disabled.png",
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_ex_pt",
+      "description": "EX錬成Pt 残数表示（S1）",
+      "rect": [
+        870,
+        460,
+        160,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_mana",
+      "description": "マナ残数表示（S1）",
+      "rect": [
+        870,
+        496,
+        160,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_ex_pt_after",
+      "description": "EX錬成Pt 残数表示（S1・錬成後の青文字）",
+      "rect": [
+        1085,
+        460,
+        160,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "s1_mana_after",
+      "description": "マナ残数表示（S1・錬成後の青文字）",
+      "rect": [
+        1085,
+        496,
+        160,
+        24
+      ],
+      "template": null,
+      "screen": "S1",
+      "clickable": false
+    },
+    {
+      "id": "modal_title",
+      "description": "「EX装備錬成確認」モーダルタイトル（S1a 識別）",
+      "rect": [
+        529,
+        99,
+        224,
+        33
+      ],
+      "template": "ui/s1a_modal_title.png",
+      "screen": "S1a",
+      "clickable": false
+    },
+    {
+      "id": "modal_text_first",
+      "description": "S1a 本文テキスト（初回錬成確認）",
+      "rect": [
+        435,
+        155,
+        402,
+        26
+      ],
+      "template": "ui/s1a_modal_text_first.png",
+      "screen": "S1a",
+      "clickable": false
+    },
+    {
+      "id": "modal_text_resynth",
+      "description": "S2a 2行目テキスト（再錬成確認識別）",
+      "rect": [
+        471,
+        179,
+        326,
+        26
+      ],
+      "template": "ui/s2a_modal_text_resynth.png",
+      "screen": "S2a",
+      "clickable": false
+    },
+    {
+      "id": "s1a_btn_ok",
+      "description": "「OK」青ボタン（S1a 初回錬成確認）",
+      "rect": [
+        754,
+        558,
+        70,
+        34
+      ],
+      "template": "ui/buttons/s1a_ok.png",
+      "screen": "S1a",
+      "clickable": true
+    },
+    {
+      "id": "s2a_btn_ok",
+      "description": "「OK」青ボタン（S2a 再錬成確認） ※S1a と同サイズの可能性あるが念のため別管理",
+      "rect": [
+        754,
+        558,
+        70,
+        34
+      ],
+      "template": "ui/buttons/s2a_ok.png",
+      "screen": "S2a",
+      "clickable": true
+    },
+    {
+      "id": "s1a_btn_cancel",
+      "description": "「キャンセル」白ボタン（S1a / S2a モーダル共通）",
+      "rect": [
+        421,
+        558,
+        150,
+        34
+      ],
+      "template": "ui/buttons/s1a_cancel.png",
+      "screen": "S1a",
+      "clickable": true
+    },
+    {
+      "id": "s2b_modal_title",
+      "description": "「錬成結果反映確認」モーダルタイトル（S2b 識別）※TBD",
+      "rect": [
+        529,
+        40,
+        224,
+        33
+      ],
+      "template": "ui/s2b_modal_title.png",
+      "screen": "S2b",
+      "clickable": false
+    },
+    {
+      "id": "s2b_btn_ok",
+      "description": "「OK」青ボタン（S2b 錬成結果反映確認）※TBD",
+      "rect": [
+        754,
+        620,
+        70,
+        34
+      ],
+      "template": "ui/buttons/s2b_ok.png",
+      "screen": "S2b",
+      "clickable": true
+    },
+    {
+      "id": "synthesis_result_label",
+      "description": "「錬成結果」黄色テキスト（S2 識別）",
+      "rect": [
+        503,
+        35,
+        263,
+        65
+      ],
+      "template": "ui/s2_synthesis_result_label.png",
+      "screen": "S2",
+      "clickable": false
+    },
+    {
+      "id": "s2_substat_slot_0",
+      "description": "S2 錬成後 サブステータス枠 0（左上） ※TBD",
+      "rect": [
+        711,
+        520,
+        241,
+        22
+      ],
+      "template": null,
+      "screen": "S2",
+      "clickable": false
+    },
+    {
+      "id": "s2_substat_slot_1",
+      "description": "S2 錬成後 サブステータス枠 1（右上） ※TBD",
+      "rect": [
+        965,
+        520,
+        241,
+        22
+      ],
+      "template": null,
+      "screen": "S2",
+      "clickable": false
+    },
+    {
+      "id": "s2_substat_slot_2",
+      "description": "S2 錬成後 サブステータス枠 2（左下） ※TBD",
+      "rect": [
+        711,
+        556,
+        241,
+        22
+      ],
+      "template": null,
+      "screen": "S2",
+      "clickable": false
+    },
+    {
+      "id": "s2_substat_slot_3",
+      "description": "S2 錬成後 サブステータス枠 3（右下） ※TBD",
+      "rect": [
+        965,
+        556,
+        241,
+        22
+      ],
+      "template": null,
+      "screen": "S2",
+      "clickable": false
+    },
+    {
+      "id": "btn_confirm",
+      "description": "「結果確定」青ボタン（S2）",
+      "rect": [
+        1080,
+        637,
+        102,
+        31
+      ],
+      "template": "ui/buttons/s2_confirm.png",
+      "screen": "S2",
+      "clickable": true
+    },
+    {
+      "id": "btn_resynth",
+      "description": "「再錬成」青ボタン（S2）",
+      "rect": [
+        896,
+        637,
+        87,
+        31
+      ],
+      "template": "ui/buttons/s2_resynth.png",
+      "screen": "S2",
+      "clickable": true
+    },
+    {
+      "id": "btn_discard",
+      "description": "「破棄」白ボタン（S2）",
+      "rect": [
+        762,
+        637,
+        57,
+        35
+      ],
+      "template": "ui/buttons/s2_discard.png",
+      "screen": "S2",
+      "clickable": true
+    },
+    {
+      "id": "lock_icon_unlocked",
+      "description": "未ロックアイコン（青色・カラー）",
+      "rect": [
+        163,
+        320,
+        22,
+        22
+      ],
+      "template": "ui/lock/s1_unlocked.png",
+      "screen": "S1",
+      "clickable": true
+    },
+    {
+      "id": "lock_icon_locked",
+      "description": "ロック中アイコン（黄色・カラー）",
+      "rect": [
+        163,
+        320,
+        22,
+        22
+      ],
+      "template": "ui/lock/s1_locked.png",
+      "screen": "S1",
+      "clickable": true
+    },
+    {
+      "id": "not_synthesized",
+      "description": "「錬成されていません。」テキスト（未錬成判定）",
+      "rect": [
+        331,
+        319,
+        172,
+        22
+      ],
+      "template": "ui/s1_not_synthesized.png",
+      "screen": "S1",
+      "clickable": false
+    }
+  ]
+}

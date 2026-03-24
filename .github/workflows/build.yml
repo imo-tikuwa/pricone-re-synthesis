@@ -1,0 +1,79 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pyproject.toml'
+
+jobs:
+  build:
+    runs-on: windows-latest  # Windows exe 生成・Windows API 使用のため必須
+    permissions:
+      contents: write  # GitHub Release 作成に必要
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-tags: true
+
+      - name: Check version
+        id: check
+        run: |
+          $pyver = python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])"
+          $latest = git tag --list 'v*' --sort=-version:refname | Select-Object -First 1
+          $latesttrimmed = if ($latest) { $latest.TrimStart('v') } else { '' }
+          echo "tag=v$pyver" >> $env:GITHUB_OUTPUT
+          if ($pyver -eq $latesttrimmed) {
+            echo "skip=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "skip=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Setup Python 3.13
+        if: steps.check.outputs.skip == 'false'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install uv and dependencies
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          pip install uv
+          uv pip install --system nuitka opencv-python PyQt6 pywin32 numpy
+
+      - name: Build templates npz
+        if: steps.check.outputs.skip == 'false'
+        run: python tools/build_templates.py
+        env:
+          PYTHONUTF8: '1'  # Windows runner のデフォルトエンコーディング (cp1252) による日本語出力エラーを回避
+
+      - name: Build with Nuitka
+        if: steps.check.outputs.skip == 'false'
+        run: >
+          python -m nuitka
+          --standalone
+          --assume-yes-for-downloads
+          --windows-console-mode=disable
+          --windows-uac-admin
+          --enable-plugin=pyqt6
+          --include-package=cv2
+          --include-data-dir=templates=templates
+          --output-filename=ultimate-synthesis.exe
+          --output-dir=dist
+          main.py
+
+      - name: Rename and zip dist folder
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          Rename-Item -Path dist/main.dist -NewName ultimate-synthesis
+          Compress-Archive -Path dist/ultimate-synthesis -DestinationPath ultimate-synthesis.zip
+
+      - name: Upload to GitHub Release
+        if: steps.check.outputs.skip == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.check.outputs.tag }}
+          files: ultimate-synthesis.zip
+          generate_release_notes: true

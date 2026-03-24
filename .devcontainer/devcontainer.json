@@ -1,0 +1,50 @@
+// pricone-re-synthesis リポジトリ作成時に .devcontainer/devcontainer.json として配置すること
+// DevContainer の役割: コード編集・ruff/mypy による静的解析・GUI 不要なユニットテスト
+// win32gui / pywin32 は Windows 専用のためコンテナ内ではインストールしない
+// 実際の動作確認は Windows Python 3.13 + uv 環境で行う
+{
+  "name": "pricone-re-synthesis",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13-bookworm",
+  // コンテナのPID1にtiniを使用し、停止シグナルの処理とゾンビプロセスの掃除を担当させる
+  "runArgs": [
+    "--init"
+  ],
+  // コンテナのタイムゾーンをJSTに設定
+  "remoteEnv": {
+    "TZ": "Asia/Tokyo"
+  },
+  // コンテナ初回作成時のセットアップ
+  // - Claude Code のインストール
+  // - uv のインストール
+  // - 静的解析ツール（ruff・mypy）と型チェック用ライブラリをインストール
+  //   PyQt6・numpy・opencv-python-headless は Linux でインストール可能（GUI 起動は不可）
+  //   pywin32 / win32gui は Windows 専用のため --ignore-missing-imports で対応
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Python 基本サポート
+        "ms-python.python",
+        // ruff: リンター + フォーマッター
+        "charliermarsh.ruff",
+        // mypy: 型チェッカー
+        "ms-python.mypy-type-checker"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            // 保存時に ruff の自動修正・import 整理を実行
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+          }
+        },
+        "mypy-type-checker.args": [
+          // pywin32 / win32gui など Windows 専用モジュールはコンテナ内で解決不可のため無視
+          "--ignore-missing-imports"
+        ]
+      }
+    }
+  }
+}

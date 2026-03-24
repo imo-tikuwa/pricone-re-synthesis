@@ -41,7 +41,7 @@ jobs:
         if: steps.check.outputs.skip == 'false'
         run: |
           pip install uv
-          uv pip install --system nuitka opencv-python PyQt6 pywin32 numpy
+          uv pip install --system nuitka opencv-python PyQt6 pywin32 numpy pillow
 
       - name: Build templates npz
         if: steps.check.outputs.skip == 'false'

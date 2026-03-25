@@ -80,7 +80,7 @@ jobs:
         if: steps.check.outputs.skip == 'false'
         run: |
           $ver = "${{ steps.check.outputs.tag }}".TrimStart('v')
-          npx changelogen@latest -r $ver --output release_notes.md
+          npx changelogen@latest -r $ver --noAuthors --output release_notes.md
         env:
           PYTHONUTF8: '1'
 

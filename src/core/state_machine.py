@@ -73,6 +73,7 @@ class StateMachineWorker(QThread):
     lock_warning = pyqtSignal(int)  # ロック失敗した枠インデックス
     resources_insufficient = pyqtSignal(int, int)  # (不足マナ, 不足PT)
     resources_updated = pyqtSignal(int, int)  # S1 で読み取ったリソース (マナ, EX錬成Pt)
+    game_window_closed = pyqtSignal()  # ゲームウィンドウ消滅通知
 
     def __init__(
         self,
@@ -179,7 +180,11 @@ class StateMachineWorker(QThread):
         frame = self._capture.capture()
 
         if frame is None:
-            logger.warning("キャプチャに失敗しました")
+            if not self._capture.is_window_alive():
+                self._transition(State.ERROR_WRONG_SCREEN)
+                self.game_window_closed.emit()
+            else:
+                logger.warning("キャプチャに失敗しました")
             return
 
         h, w = frame.shape[:2]

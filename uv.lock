@@ -246,7 +246,7 @@ wheels = [
 
 [[package]]
 name = "pricone-re-synthesis"
-version = "0.1.0"
+version = "1.0.2"
 source = { virtual = "." }
 dependencies = [
     { name = "numpy" },

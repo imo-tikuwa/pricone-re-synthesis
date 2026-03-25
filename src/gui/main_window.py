@@ -370,6 +370,7 @@ class MainWindow(QMainWindow):
         self._worker.lock_warning.connect(self._on_lock_warning)
         self._worker.resources_updated.connect(self._on_resources_updated)
         self._worker.finished.connect(self._on_worker_finished)
+        self._worker.game_window_closed.connect(self._on_game_window_closed)
 
         self._synthesis_count = 0
         self._count_status_label.setText("錬成回数   0回")
@@ -447,6 +448,18 @@ class MainWindow(QMainWindow):
         QMessageBox.critical(self, "エラー", message)
 
     @pyqtSlot()
+    def _on_game_window_closed(self) -> None:
+        """ゲームウィンドウ消滅通知."""
+        self._capture_timer.stop()
+        self._bring_to_front()
+        QMessageBox.critical(
+            self,
+            "ゲーム終了",
+            "ゲームが終了しました。\nツールを閉じます。",
+        )
+        self.close()
+
+    @pyqtSlot()
     def _on_completed(self) -> None:
         """完了シグナル受信."""
         self._state_label.setText(f"完了！ 錬成 {self._synthesis_count} 回で目標を達成しました。")
@@ -480,6 +493,16 @@ class MainWindow(QMainWindow):
         """キャプチャタイマーのティック: 画面をキャプチャして GUI を更新する."""
         frame = self._capture.capture(bring_to_front=False)
         if frame is None:
+            if not self._capture.is_window_alive():
+                self._capture_timer.stop()
+                if self._worker is None:
+                    self._bring_to_front()
+                    QMessageBox.critical(
+                        self,
+                        "ゲーム終了",
+                        "ゲームが終了しました。\nツールを閉じます。",
+                    )
+                    self.close()
             return
 
         h, w = frame.shape[:2]

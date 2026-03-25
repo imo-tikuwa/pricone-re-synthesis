@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-tags: true
+          fetch-depth: 0  # changelogen が git 履歴全体を必要とするため
 
       - name: Check version
         id: check
@@ -70,10 +70,24 @@ jobs:
           Rename-Item -Path dist/main.dist -NewName ultimate-synthesis
           Compress-Archive -Path dist/ultimate-synthesis -DestinationPath ultimate-synthesis.zip
 
+      - name: Setup Node.js
+        if: steps.check.outputs.skip == 'false'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Generate release notes
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          $ver = "${{ steps.check.outputs.tag }}".TrimStart('v')
+          npx changelogen@latest -r $ver --output release_notes.md
+        env:
+          PYTHONUTF8: '1'
+
       - name: Upload to GitHub Release
         if: steps.check.outputs.skip == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.check.outputs.tag }}
           files: ultimate-synthesis.zip
-          generate_release_notes: true
+          body_path: release_notes.md

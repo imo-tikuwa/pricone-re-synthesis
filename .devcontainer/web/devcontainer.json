@@ -1,0 +1,40 @@
+{
+  "name": "pricone-re-synthesis (web)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  // コンテナのPID1にtiniを使用し、停止シグナルの処理とゾンビプロセスの掃除を担当させる
+  "runArgs": ["--init"],
+  // コンテナのタイムゾーンをJSTに設定
+  "remoteEnv": {
+    "TZ": "Asia/Tokyo"
+  },
+  // コンテナ初回作成時にClaude Codeをインストール、webディレクトリの依存関係をインストール
+  "postCreateCommand": "curl -fsSL https://claude.ai/install.sh | bash -s stable && cd web && npm ci",
+  // ポートフォワーディング設定（コンテナ内のポートをホストに転送）
+  // 5173: Vite開発サーバー
+  "forwardPorts": [5173],
+  // VSCode拡張機能の設定
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Vue.volar",
+        "dbaeumer.vscode-eslint",
+        "EditorConfig.EditorConfig",
+        "oxc.oxc-vscode",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "explorer.fileNesting.enabled": true,
+        "explorer.fileNesting.patterns": {
+          "tsconfig.json": "tsconfig.*.json, env.d.ts",
+          "vite.config.*": "jsconfig*, vitest.config.*, cypress.config.*, playwright.config.*",
+          "package.json": "package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .oxlint*, oxlint*, .oxfmt*, .prettier*, prettier*, .editorconfig"
+        }
+      }
+    }
+  }
+}

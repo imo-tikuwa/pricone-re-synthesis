@@ -1,6 +1,16 @@
 <script setup lang="ts">
 const base = import.meta.env.BASE_URL
 
+const ready = ref(false)
+
+onMounted(() => {
+  setTimeout(() => {
+    ready.value = true
+  }, 800)
+})
+
+useGa4()
+
 const { mode: colorMode } = useAppColorMode()
 
 const colorModeOptions: {
@@ -106,9 +116,23 @@ const uiItems: UiItem[] = [
 </script>
 
 <template>
-  <CookieConsentBanner />
+  <!-- ローディングオーバーレイ -->
+  <Transition name="loader">
+    <div v-if="!ready" class="fixed inset-0 z-[9999] bg-surface-100 dark:bg-surface-900">
+      <ProgressBar
+        mode="indeterminate"
+        :pt="{
+          root: { style: 'height:3px;border-radius:0;border:none;background:var(--p-surface-200);' },
+        }"
+      />
+    </div>
+  </Transition>
 
-  <div class="min-h-screen bg-surface-100 text-surface-900 dark:bg-surface-900 dark:text-surface-0">
+  <!-- メインコンテンツ -->
+  <Transition name="page">
+    <div v-if="ready">
+      <CookieConsentBanner />
+      <div class="min-h-screen bg-surface-100 text-surface-900 dark:bg-surface-900 dark:text-surface-0">
     <!-- ヘッダー -->
     <header
       class="sticky top-0 z-10 border-b border-surface-200 bg-surface-0/90 backdrop-blur dark:border-surface-700 dark:bg-surface-800/90"
@@ -186,6 +210,8 @@ const uiItems: UiItem[] = [
               :src="`${base}images/tool-movie.mp4`"
               controls
               muted
+              width="640"
+              height="684"
               class="h-[420px] w-auto object-cover"
             />
           </div>
@@ -212,7 +238,15 @@ const uiItems: UiItem[] = [
           </tbody>
         </table>
         <Message severity="warn" :closable="false">
-          UAC の「不明な発行元」警告は署名なしのため正常です。「はい」を選択して続行してください。
+          <ul class="space-y-1">
+            <li>
+              マウス操作の自動化にはゲームプロセスと同等の権限が必要なため、管理者権限での実行が必要です。
+            </li>
+            <li>
+              UAC
+              の「不明な発行元」警告は署名なしのため正常です。「はい」を選択して続行してください。
+            </li>
+          </ul>
         </Message>
       </section>
 
@@ -439,5 +473,24 @@ const uiItems: UiItem[] = [
         </a>
       </div>
     </footer>
+    </div>
   </div>
+  </Transition>
 </template>
+
+<style scoped>
+.loader-leave-active {
+  transition: opacity 0.3s ease;
+}
+.loader-leave-to {
+  opacity: 0;
+}
+
+.page-enter-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateX(24px);
+}
+</style>

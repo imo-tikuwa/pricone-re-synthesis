@@ -15,6 +15,7 @@ declare module 'vue' {
     CookieConsentBanner: typeof import('./../components/CookieConsentBanner.vue')['default']
     Divider: typeof import('primevue/divider')['default']
     Message: typeof import('primevue/message')['default']
+    ProgressBar: typeof import('primevue/progressbar')['default']
     Skeleton: typeof import('primevue/skeleton')['default']
     Tag: typeof import('primevue/tag')['default']
   }

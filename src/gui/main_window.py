@@ -314,8 +314,8 @@ class MainWindow(QMainWindow):
         """開始ボタン押下."""
         # ゲームプロセス確認
         if not self._capture.find_window():
-            QMessageBox.critical(
-                self,
+            self._show_dialog(
+                QMessageBox.Icon.Critical,
                 "エラー",
                 f"ゲームウィンドウ「{WINDOW_TITLE}」が見つかりません。\n"
                 "ゲームを起動して究極錬成画面を開いてから再試行してください。",
@@ -324,13 +324,15 @@ class MainWindow(QMainWindow):
 
         goal = self._build_goal()
         if goal is None:
-            QMessageBox.warning(self, "設定エラー", "目標ステータスが選択されていません。")
+            self._show_dialog(
+                QMessageBox.Icon.Warning, "設定エラー", "目標ステータスが選択されていません。"
+            )
             return
 
         equipment = self._current_equipment
         if equipment is None:
-            QMessageBox.warning(
-                self,
+            self._show_dialog(
+                QMessageBox.Icon.Warning,
                 "装備未検出",
                 "装備がまだ自動検出されていません。\n"
                 "ゲームを究極錬成の装備選択画面にしてください。",
@@ -366,6 +368,7 @@ class MainWindow(QMainWindow):
         self._worker.state_changed.connect(self._on_state_changed)
         self._worker.synthesis_count_changed.connect(self._on_synthesis_count)
         self._worker.error_occurred.connect(self._on_error)
+        self._worker.aborted.connect(self._on_aborted)
         self._worker.completed.connect(self._on_completed)
         self._worker.lock_warning.connect(self._on_lock_warning)
         self._worker.resources_updated.connect(self._on_resources_updated)
@@ -445,17 +448,23 @@ class MainWindow(QMainWindow):
     def _on_error(self, message: str) -> None:
         """エラー発生."""
         self._bring_to_front()
-        QMessageBox.critical(self, "エラー", message)
+        self._show_dialog(QMessageBox.Icon.Critical, "エラー", message)
+
+    @pyqtSlot(str)
+    def _on_aborted(self, message: str) -> None:
+        """中断条件到達（正常終了）."""
+        self._bring_to_front()
+        self._show_dialog(QMessageBox.Icon.Information, "中断", message)
 
     @pyqtSlot()
     def _on_game_window_closed(self) -> None:
         """ゲームウィンドウ消滅通知."""
         self._capture_timer.stop()
         self._bring_to_front()
-        QMessageBox.critical(
-            self,
+        self._show_dialog(
+            QMessageBox.Icon.Critical,
             "ゲーム終了",
-            "ゲームが終了しました。\nツールを閉じます。",
+            "ゲームウィンドウが閉じられました。\nツールを終了します。",
         )
         self.close()
 
@@ -464,8 +473,8 @@ class MainWindow(QMainWindow):
         """完了シグナル受信."""
         self._state_label.setText(f"完了！ 錬成 {self._synthesis_count} 回で目標を達成しました。")
         self._bring_to_front()
-        QMessageBox.information(
-            self,
+        self._show_dialog(
+            QMessageBox.Icon.Information,
             "完了",
             f"目標ステータスの錬成が完了しました！\n錬成回数: {self._synthesis_count} 回",
         )
@@ -480,8 +489,8 @@ class MainWindow(QMainWindow):
     def _on_lock_warning(self, slot_index: int) -> None:
         """ロック失敗警告."""
         self._bring_to_front()
-        QMessageBox.warning(
-            self,
+        self._show_dialog(
+            QMessageBox.Icon.Warning,
             "ロック失敗",
             f"枠 {slot_index + 1} のロックに失敗しました。\n"
             "手動でロック状態を確認してから「開始」を押してください。",
@@ -497,10 +506,10 @@ class MainWindow(QMainWindow):
                 self._capture_timer.stop()
                 if self._worker is None:
                     self._bring_to_front()
-                    QMessageBox.critical(
-                        self,
+                    self._show_dialog(
+                        QMessageBox.Icon.Critical,
                         "ゲーム終了",
-                        "ゲームが終了しました。\nツールを閉じます。",
+                        "ゲームウィンドウが閉じられました。\nツールを終了します。",
                     )
                     self.close()
             return
@@ -509,8 +518,8 @@ class MainWindow(QMainWindow):
         if w != WINDOW_WIDTH or h != WINDOW_HEIGHT:
             self._capture_display.update_frame(frame)
             self._capture_timer.stop()
-            QMessageBox.critical(
-                self,
+            self._show_dialog(
+                QMessageBox.Icon.Critical,
                 "ウィンドウサイズエラー",
                 f"ゲームウィンドウのサイズが正しくありません。\n"
                 f"期待: {WINDOW_WIDTH}×{WINDOW_HEIGHT} px\n"
@@ -783,6 +792,34 @@ class MainWindow(QMainWindow):
         idx = self._min_ex_pt_combo.findData(current_val)
         self._min_ex_pt_combo.setCurrentIndex(idx if idx >= 0 else 0)
         self._min_ex_pt_combo.blockSignals(False)
+
+    def _show_dialog(self, icon: QMessageBox.Icon, title: str, text: str) -> None:
+        """最小化・最大化ボタンなしのダイアログを表示する."""
+        import ctypes
+
+        msg = QMessageBox(self)
+        msg.setIcon(icon)
+        msg.setWindowTitle(title)
+        msg.setText(text)
+
+        if hasattr(ctypes, "windll"):
+            # Win32 API でウィンドウスタイルを直接書き換えて最小化・最大化ボタンを除去する
+            # Qt のフラグだけでは確実に制御できないため、表示後にスタイルビットを操作する
+            _GWL_STYLE = -16
+            _WS_MINIMIZEBOX = 0x00020000
+            _WS_MAXIMIZEBOX = 0x00010000
+            user32 = ctypes.windll.user32
+
+            def _remove_minmax() -> None:
+                hwnd = int(msg.winId())
+                style = user32.GetWindowLongW(hwnd, _GWL_STYLE)
+                style &= ~(_WS_MINIMIZEBOX | _WS_MAXIMIZEBOX)
+                user32.SetWindowLongW(hwnd, _GWL_STYLE, style)
+                user32.DrawMenuBar(hwnd)
+
+            QTimer.singleShot(0, _remove_minmax)
+
+        msg.exec()
 
     def _bring_to_front(self) -> None:
         """ウィンドウを最前面に移動する."""

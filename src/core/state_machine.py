@@ -69,6 +69,7 @@ class StateMachineWorker(QThread):
     state_changed = pyqtSignal(str)  # 状態名
     synthesis_count_changed = pyqtSignal(int)  # 錬成回数
     error_occurred = pyqtSignal(str)  # エラーメッセージ
+    aborted = pyqtSignal(str)  # 中断条件到達（正常終了）
     completed = pyqtSignal()  # 完了（GOAL_ACHIEVED 後）
     lock_warning = pyqtSignal(int)  # ロック失敗した枠インデックス
     resources_insufficient = pyqtSignal(int, int)  # (不足マナ, 不足PT)
@@ -385,14 +386,14 @@ class StateMachineWorker(QThread):
                 max(0, mana_cost - mana),
                 max(0, ex_pt_cost - ex_pt),
             )
-            self.error_occurred.emit(
+            self.aborted.emit(
                 f"リソースが不足しています。\n"
                 f"マナ: {mana:,} / {mana_cost:,}\n"
                 f"EX錬成Pt: {ex_pt:,} / {ex_pt_cost:,}"
             )
         elif self._goal.min_ex_pt > 0 and ex_pt < self._goal.min_ex_pt:
             self._transition(State.ERROR_INSUFFICIENT)
-            self.error_occurred.emit(
+            self.aborted.emit(
                 f"EX錬成Pt が残量下限に達しました。\n"
                 f"現在: {ex_pt:,} / 下限: {self._goal.min_ex_pt:,}"
             )
@@ -568,7 +569,7 @@ class StateMachineWorker(QThread):
                 "EX錬成Pt 残量下限到達: 推定=%d, 下限=%d", self._est_ex_pt, self._goal.min_ex_pt
             )
             self._transition(State.ERROR_INSUFFICIENT)
-            self.error_occurred.emit(
+            self.aborted.emit(
                 f"EX錬成Pt が残量下限に達しました。\n"
                 f"推定残量: {self._est_ex_pt:,} / 下限: {self._goal.min_ex_pt:,}"
             )

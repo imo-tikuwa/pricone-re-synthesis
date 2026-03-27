@@ -56,6 +56,16 @@ def main() -> int:
     app.setApplicationName("究極錬成ツール")
     app.setOrganizationName("pricone-re-synthesis")
 
+    # 管理者権限チェック（ゲームが管理者権限で動作しているため必須）
+    if sys.platform == "win32" and not ctypes.windll.shell32.IsUserAnAdmin():
+        QMessageBox.critical(
+            None,
+            "起動エラー",
+            "管理者権限で実行してください。\n"
+            "コマンドプロンプトを「管理者として実行」してから再起動してください。",
+        )
+        return 1
+
     # --state オプションのバリデーション
     initial_state: State | None = None
     if args.state is not None:

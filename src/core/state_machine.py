@@ -33,6 +33,7 @@ from src.core.constants import (
     SAFE_CLICK_INTERVAL,
     STAT_TO_SCALE,
     STATE_DISPLAY_NAMES,
+    TIMEOUT_BUTTON_DETECT,
     TIMEOUT_CHECKING_SCREEN,
     TIMEOUT_CONFIRMING_RESULT,
     TIMEOUT_S1A_CONFIRM,
@@ -117,6 +118,9 @@ class StateMachineWorker(QThread):
         # リソース推定値（S1 実測 + 各錬成コスト累積で更新）
         self._est_mana: int | None = None
         self._est_ex_pt: int | None = None
+
+        # 現在の状態に入った時刻（タイムアウト判定用）
+        self._state_start: float = time.time()
 
     # ------------------------------------------------------------------
     # 公開メソッド
@@ -402,6 +406,12 @@ class StateMachineWorker(QThread):
 
     def _handle_clicking_synthesize(self, frame: npt.NDArray[np.uint8]) -> None:
         """「錬成」ボタンをカラー TM で確認してクリックする."""
+        if time.time() - self._state_start > TIMEOUT_BUTTON_DETECT:
+            self._transition(State.ERROR_TIMEOUT)
+            self.error_occurred.emit(
+                f"「錬成」ボタンが {TIMEOUT_BUTTON_DETECT} 秒以内に検出できませんでした。"
+            )
+            return
         is_active, is_disabled = self._matcher.match_synthesize_button(frame, S1_BTN_SYNTHESIZE_ROI)
         if is_active:
             self._automator.click_center(S1_BTN_SYNTHESIZE_ROI)
@@ -559,6 +569,12 @@ class StateMachineWorker(QThread):
 
     def _handle_no_match(self, frame: npt.NDArray[np.uint8]) -> None:
         """「再錬成」ボタンをクリックして S2a へ."""
+        if time.time() - self._state_start > TIMEOUT_BUTTON_DETECT:
+            self._transition(State.ERROR_TIMEOUT)
+            self.error_occurred.emit(
+                f"「再錬成」ボタンが {TIMEOUT_BUTTON_DETECT} 秒以内に検出できませんでした。"
+            )
+            return
         # EX錬成Pt 残量下限チェック（再錬成ループ中は推定値で判定）
         if (
             self._goal.min_ex_pt > 0
@@ -597,6 +613,12 @@ class StateMachineWorker(QThread):
 
     def _handle_s2a(self, frame: npt.NDArray[np.uint8]) -> None:
         """S2a モーダル（再錬成確認）: 「OK」ボタンをクリックして CLICKING_OK_RESYNTH へ."""
+        if time.time() - self._state_start > TIMEOUT_BUTTON_DETECT:
+            self._transition(State.ERROR_TIMEOUT)
+            self.error_occurred.emit(
+                f"S2a モーダルが {TIMEOUT_BUTTON_DETECT} 秒以内に検出できませんでした。"
+            )
+            return
         matched, score, _ = self._matcher.match(
             frame, "ui/s2a_modal_text_resynth", S2A_MODAL_TEXT_ROI, TM_THRESHOLD_DEFAULT
         )
@@ -648,6 +670,12 @@ class StateMachineWorker(QThread):
 
     def _handle_s2b(self, frame: npt.NDArray[np.uint8]) -> None:
         """S2b モーダル（錬成結果反映確認）: 「OK」ボタンをクリックして CONFIRMING_RESULT に戻る."""
+        if time.time() - self._state_start > TIMEOUT_BUTTON_DETECT:
+            self._transition(State.ERROR_TIMEOUT)
+            self.error_occurred.emit(
+                f"S2b モーダルが {TIMEOUT_BUTTON_DETECT} 秒以内に検出できませんでした。"
+            )
+            return
         matched, score, _ = self._matcher.match(
             frame, "ui/s2b_modal_title", S2B_MODAL_TITLE_ROI, TM_THRESHOLD_DEFAULT
         )
@@ -738,6 +766,7 @@ class StateMachineWorker(QThread):
         if self._state != new_state:
             logger.debug("状態遷移: %s → %s", self._state, new_state)
             self._state = new_state
+            self._state_start = time.time()
         self._emit_state()
 
     def _emit_state(self) -> None:

@@ -93,15 +93,14 @@ _POOL_W1001: list[StatPoolEntry] = [
 ]
 
 # W1002 オーバー・ザ・ムーン: phys_pen が Lv1〜5 全て抽選対象（通常武器は Lv3〜5 のみ）
-# TODO: 手持ちなし・テンプレート未取得のためコメントアウト中
-# _POOL_W1002: list[StatPoolEntry] = [
-#     StatPoolEntry("hp", _W_HP),
-#     StatPoolEntry("phys_atk", _W_ATK),
-#     StatPoolEntry("phys_def", _W_DEF),
-#     StatPoolEntry("mag_def", _W_DEF),
-#     StatPoolEntry("phys_crit", _W_CRIT),
-#     StatPoolEntry("phys_pen", _PEN_EXT),
-# ]
+_POOL_W1002: list[StatPoolEntry] = [
+    StatPoolEntry("hp", _W_HP),
+    StatPoolEntry("phys_atk", _W_ATK),
+    StatPoolEntry("phys_def", _W_DEF),
+    StatPoolEntry("mag_def", _W_DEF),
+    StatPoolEntry("phys_crit", _W_CRIT),
+    StatPoolEntry("phys_pen", _PEN_EXT),
+]
 
 # ===========================================================================
 # 防具 stat_pool
@@ -303,13 +302,13 @@ EQUIPMENT_MASTER: list[EquipmentData] = [
         type=EquipmentType.WEAPON,
         stat_pool=_POOL_W1001,
     ),
-    # EquipmentData(
-    #     id="W1002",
-    #     display_name="オーバー・ザ・ムーン",
-    #     template="equipment/weapon/W1002.png",
-    #     type=EquipmentType.WEAPON,
-    #     stat_pool=_POOL_W1002,
-    # ),  # TODO: 手持ちなし・テンプレート未取得
+    EquipmentData(
+        id="W1002",
+        display_name="オーバー・ザ・ムーン",
+        template="equipment/weapon/W1002.png",
+        type=EquipmentType.WEAPON,
+        stat_pool=_POOL_W1002,
+    ),
     # =========================================================================
     # EX★5 防具  A0001〜A0004
     # A0001〜A0002: 物理系 (phys_atk + phys_pen)

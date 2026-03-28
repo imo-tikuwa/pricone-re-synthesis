@@ -145,9 +145,17 @@ class StateMachineWorker(QThread):
         self._state = self._initial_state
         self._synthesis_count = 0
         self._emit_state()
+        eq = self._evaluator.equipment
+        locked = sorted(self._evaluator.locked_slots)
         logger.info(
-            "ステートマシン開始: %s | 目標: %s %s %d枠 | EX錬成Pt下限: %s",
+            "ステートマシン開始: %s | 装備: %s (%s) | ロック済み枠: %s",
             self._state,
+            eq.display_name,
+            eq.type,
+            locked if locked else "なし",
+        )
+        logger.info(
+            "目標: %s %s %d枠 | EX錬成Pt下限: %s",
             self._goal.target_stat,
             self._goal.min_value,
             self._goal.required_slots,
@@ -734,14 +742,29 @@ class StateMachineWorker(QThread):
 
         candidate_stats = equipment.get_stat_pool_stats()
 
+        known_locked = self._evaluator.locked_slots
         substats: list[SubstatSlot] = []
-        for i, slot_roi in enumerate(S2_SUBSTAT_ROIS):
-            is_locked = self._matcher.detect_lock_state(frame, slot_roi)
-
-            prefix = "substats/s2/locked" if is_locked else "substats/s2"
-            stat = self._matcher.read_substat_name(
-                frame, S2_SUBSTAT_NAME_ROIS[i], candidate_stats, template_prefix=prefix
-            )
+        for i, _slot_roi in enumerate(S2_SUBSTAT_ROIS):
+            name_roi = S2_SUBSTAT_NAME_ROIS[i]
+            if i in known_locked:
+                # evaluator が把握しているロック済み枠: locked テンプレートを使用
+                is_locked = True
+                stat = self._matcher.read_substat_name(
+                    frame, name_roi, candidate_stats, template_prefix="substats/s2/locked"
+                )
+            else:
+                # 未確定枠: unlocked を優先し、検出できなければ locked も試す
+                # （--state S2_RESULT 等でデバッグ開始した場合の locked 枠に対応）
+                stat = self._matcher.read_substat_name(
+                    frame, name_roi, candidate_stats, template_prefix="substats/s2"
+                )
+                if stat is None:
+                    stat = self._matcher.read_substat_name(
+                        frame, name_roi, candidate_stats, template_prefix="substats/s2/locked"
+                    )
+                    is_locked = stat is not None
+                else:
+                    is_locked = False
 
             value: str | None = None
             if stat is not None:

@@ -72,6 +72,11 @@ S2_SUBSTAT_ROIS: list[tuple[int, int, int, int]] = [
 S2_SUBSTAT_NAME_ROIS: list[tuple[int, int, int, int]] = [
     (r[0] + 1, r[1] + 1, 135, r[3] - 2) for r in S2_SUBSTAT_ROIS
 ]
+# ロックアイコン検出専用 ROI: 行全体ではなく左端 30px のみ対象にする
+# （行全体を使うと背景・ハイライトの青ピクセルに負けて誤検出になるため）
+S2_LOCK_ICON_ROIS: list[tuple[int, int, int, int]] = [
+    (r[0], r[1], 30, r[3]) for r in S2_SUBSTAT_ROIS
+]
 S2_SUBSTAT_VALUE_ROIS: list[tuple[int, int, int, int]] = [
     (r[0] + 175, r[1] + 1, 67, 24)
     for r in S2_SUBSTAT_ROIS  # S1 テンプレートに合わせた固定サイズ

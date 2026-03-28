@@ -518,6 +518,12 @@ class StateMachineWorker(QThread):
         detection = self._detect_frame(frame)
         result_substats = detection.substats
 
+        logger.info(
+            "─── 錬成 #%d  マナ推定: %s  EX錬成Pt推定: %s ───",
+            self._synthesis_count,
+            f"{self._est_mana:,}" if self._est_mana is not None else "―",
+            f"{self._est_ex_pt:,}" if self._est_ex_pt is not None else "―",
+        )
         for slot in result_substats:
             logger.info(
                 "  枠 %d: stat=%-12s value=%-8s locked=%s",

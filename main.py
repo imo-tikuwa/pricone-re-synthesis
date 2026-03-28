@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import datetime
 import logging
 import sys
+from pathlib import Path
 
 # DPI 仮想化を無効にする（これがないと SetCursorPos 等の座標が物理ピクセルと一致しない）
 if sys.platform == "win32":
@@ -41,11 +43,20 @@ def _parse_args() -> argparse.Namespace:
 
 def _setup_logging(debug: bool) -> None:
     level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%H:%M:%S",
-    )
+    fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    datefmt = "%H:%M:%S"
+    logging.basicConfig(level=level, format=fmt, datefmt=datefmt)
+
+    # ファイルハンドラ: logs/synthesis_YYYYMMDD_HHMMSS.log
+    log_dir = Path(__file__).parent / "logs"
+    log_dir.mkdir(exist_ok=True)
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = log_dir / f"synthesis_{timestamp}.log"
+    fh = logging.FileHandler(log_file, encoding="utf-8")
+    fh.setLevel(level)
+    fh.setFormatter(logging.Formatter(fmt, datefmt=datefmt))
+    logging.getLogger("src.core.state_machine").addHandler(fh)
+    print(f"ログファイル: {log_file}")
 
 
 def main() -> int:

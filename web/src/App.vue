@@ -48,7 +48,7 @@ const requirements = [
 
 const steps = [
   { text: 'ゲームを起動し、究極錬成の装備一覧画面を開く', note: null },
-  { text: 'ツールを起動する', note: 'ゲームが起動していない場合はエラーになります' },
+  { text: 'ultimate-synthesis.exe を実行する（UAC の確認が表示されたら「はい」を選択）', note: 'ゲームが起動していない場合はエラーになります' },
   { text: 'キャプチャ表示に装備一覧画面が映り、装備情報が自動検出されるのを待つ', note: null },
   { text: '完了条件・中断条件を設定する', note: null },
   { text: '「開始」ボタンを押す', note: null },

@@ -29,8 +29,10 @@ from src.core.constants import (
     S1_SUBSTAT_LOCK_ROIS,
     S1_SUBSTAT_NAME_ROIS,
     S1_SUBSTAT_VALUE_ROIS,
+    S1_ULTIMATE_LABEL_ROI,
     STAT_DISPLAY_NAMES,
     STAT_TO_SCALE,
+    TM_THRESHOLD_DEFAULT,
     WEAPON_SPECIAL_IDS,
     WINDOW_HEIGHT,
     WINDOW_TITLE,
@@ -408,6 +410,8 @@ class MainWindow(QMainWindow):
     def _on_worker_finished(self) -> None:
         """ワーカースレッド終了時のクリーンアップ."""
         self._worker = None
+        # 自動処理中に EX PT が変化している可能性があるため、次の読み取りで必ずコンボを更新する
+        self._last_ex_pt_combo_base = -1
         for w in [
             self._stat_combo,
             self._min_value_combo,
@@ -483,7 +487,9 @@ class MainWindow(QMainWindow):
     def _on_resources_updated(self, mana: int, ex_pt: int) -> None:
         """ステートマシンが S1 で読み取ったリソース値でパネルを更新する."""
         self._info_panel.update_resources(mana, ex_pt)
-        self._refresh_ex_pt_combo(ex_pt)
+        # 自動処理中はコンボを再生成しない（設定変更不可のため選択値がリセットされるのを防ぐ）
+        if self._worker is None:
+            self._refresh_ex_pt_combo(ex_pt)
 
     @pyqtSlot(int)
     def _on_lock_warning(self, slot_index: int) -> None:
@@ -543,26 +549,50 @@ class MainWindow(QMainWindow):
 
         # 自動化実行中はステートマシン側で管理するため検出しない
         if self._worker is None and self._detector is not None:
-            eq = self._detector.detect(frame)
-            equipment_changed = eq is not None and eq != self._current_equipment
-            if equipment_changed and eq is not None:
-                self.set_detected_equipment(eq)
+            s1_on_screen, _, _ = self._matcher.match(
+                frame, "ui/s1_ultimate_synthesis_label", S1_ULTIMATE_LABEL_ROI, TM_THRESHOLD_DEFAULT
+            )
+            if s1_on_screen:
+                mana = self._matcher.read_digits(frame, MANA_ROI, color="black")
+                ex_pt = self._matcher.read_digits(frame, EX_PT_ROI, color="black")
+                self._info_panel.update_resources(mana, ex_pt)
+                if ex_pt is not None:
+                    self._refresh_ex_pt_combo(ex_pt)
 
-            if self._current_equipment is not None:
-                substats = self._read_s1_substats(frame)
-                self._info_panel.update_substats(substats)
-                if equipment_changed:
-                    self._auto_set_goal_from_locks(substats)
-                all_locked = len(substats) == 4 and all(s.is_locked for s in substats)
-                if all_locked != self._all_slots_locked:
-                    self._all_slots_locked = all_locked
+                eq = self._detector.detect(frame)
+                equipment_changed = eq is not None and eq != self._current_equipment
+                if equipment_changed and eq is not None:
+                    self.set_detected_equipment(eq)
+                elif eq is None and self._current_equipment is not None:
+                    # S1 画面だが装備が未選択（戻るボタン等で装備選択を解除した場合）
+                    self._current_equipment = None
+                    self._all_slots_locked = False
+                    self._info_panel.update_equipment("―", "―")
+                    self._info_panel.update_substats([])
+                    self._refresh_stat_combo()
                     self._update_start_button()
 
-            mana = self._matcher.read_digits(frame, MANA_ROI, color="black")
-            ex_pt = self._matcher.read_digits(frame, EX_PT_ROI, color="black")
-            self._info_panel.update_resources(mana, ex_pt)
-            if ex_pt is not None:
-                self._refresh_ex_pt_combo(ex_pt)
+                if self._current_equipment is not None:
+                    substats = self._read_s1_substats(frame)
+                    self._info_panel.update_substats(substats)
+                    if equipment_changed:
+                        self._auto_set_goal_from_locks(substats)
+                    all_locked = len(substats) == 4 and all(s.is_locked for s in substats)
+                    if all_locked != self._all_slots_locked:
+                        self._all_slots_locked = all_locked
+                        self._update_start_button()
+            else:
+                # S1 画面を離れたとき: 次回 S1 に戻った際に初期値を再設定できるようリセット
+                self._last_ex_pt_combo_base = -1
+                if self._current_equipment is not None:
+                    # 装備情報・リソース表示をクリアする
+                    self._current_equipment = None
+                    self._all_slots_locked = False
+                    self._info_panel.update_equipment("―", "―")
+                    self._info_panel.update_substats([])
+                    self._info_panel.update_resources(None, None)
+                    self._refresh_stat_combo()
+                    self._update_start_button()
 
         # デバッグモード: ROI オーバーレイを描画（TODO: デバッグ ROI 描画実装）
         if self._debug:
@@ -790,6 +820,9 @@ class MainWindow(QMainWindow):
             self._min_ex_pt_combo.addItem(f"{t:,}", userData=t)
 
         idx = self._min_ex_pt_combo.findData(current_val)
+        if idx < 0 and thresholds:
+            # 選択値が新しい閾値リストにない（EX PT が選択値を下回った等）場合も最大閾値を選択する
+            idx = self._min_ex_pt_combo.findData(thresholds[-1])
         self._min_ex_pt_combo.setCurrentIndex(idx if idx >= 0 else 0)
         self._min_ex_pt_combo.blockSignals(False)
 

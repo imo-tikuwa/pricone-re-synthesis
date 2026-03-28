@@ -111,6 +111,9 @@ class SubstatGridWidget(QWidget):
 
     def update_substats(self, substats: list[SubstatSlot]) -> None:
         """4 枠分のサブステータスを更新する."""
+        if not substats:
+            self.clear()
+            return
         for slot_data in substats:
             if 0 <= slot_data.slot_index < 4:
                 self._slots[slot_data.slot_index].update_slot(slot_data)

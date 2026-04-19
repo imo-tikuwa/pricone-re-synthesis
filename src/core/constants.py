@@ -110,7 +110,7 @@ S2_BTN_DISCARD_ROI: tuple[int, int, int, int] = (762, 637, 57, 35)
 
 
 # 特殊武器 ID（pen スケールが 1〜5 に拡張されている）
-WEAPON_SPECIAL_IDS: frozenset[str] = frozenset({"W1001", "W1002"})
+WEAPON_SPECIAL_IDS: frozenset[str] = frozenset({"W1001", "W1002", "W1003"})
 
 # サブステータス効果名 → テンプレートフォルダのスケール名
 STAT_TO_SCALE: dict[str, str] = {

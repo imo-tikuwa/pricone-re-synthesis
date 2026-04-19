@@ -5,7 +5,7 @@
 
 ■ ID 体系
   W####  : EX★5 武器（通常）   W0001〜W0011
-  W1###  : EX★5 特殊武器        W1001〜W1002
+  W1###  : EX★5 特殊武器        W1001〜W1003
   A####  : EX★5 防具            A0001〜A0004
   C####  : EX★5 属性アクセサリー C0001〜C0010
            （各 5 属性 → id サフィックス: _fire/_water/_wind/_light/_dark）
@@ -294,6 +294,7 @@ EQUIPMENT_MASTER: list[EquipmentData] = [
     # EX★5 特殊武器  W1001〜W1002
     # W1001: mag_pen が全レベル抽選対象（値 1〜5）
     # W1002: phys_pen が全レベル抽選対象（値 1〜5）
+    # W1003: phys_pen が全レベル抽選対象（値 1〜5）※ W1002 と同パターン
     # =========================================================================
     EquipmentData(
         id="W1001",
@@ -306,6 +307,13 @@ EQUIPMENT_MASTER: list[EquipmentData] = [
         id="W1002",
         display_name="オーバー・ザ・ムーン",
         template="equipment/weapon/W1002.png",
+        type=EquipmentType.WEAPON,
+        stat_pool=_POOL_W1002,
+    ),
+    EquipmentData(
+        id="W1003",
+        display_name="ペディル・ラ・ルナ",
+        template="equipment/weapon/W1003.png",
         type=EquipmentType.WEAPON,
         stat_pool=_POOL_W1002,
     ),

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import urllib.request
+import winsound
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSlot
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtCore import QThread, Qt, QTimer, QUrl, pyqtSignal, pyqtSlot
+from PyQt6.QtGui import QDesktopServices, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -79,6 +82,69 @@ def _generate_ex_pt_thresholds(current: int) -> list[int]:
     return thresholds
 
 
+_RELEASES_API = "https://api.github.com/repos/imo-tikuwa/pricone-re-synthesis/releases/latest"
+_RELEASES_URL = "https://imo-tikuwa.github.io/lab/pricone-re-synthesis/"
+
+
+class UpdateChecker(QThread):
+    """バックグラウンドで GitHub Releases API を叩き、新バージョンがあれば通知する."""
+
+    update_found = pyqtSignal(str)  # 最新バージョン文字列（例: "1.3.0"）
+
+    def run(self) -> None:
+        try:
+            from src._version import __version__ as current
+        except ImportError:
+            return  # ローカル実行時はチェックしない
+
+        try:
+            req = urllib.request.Request(
+                _RELEASES_API,
+                headers={"User-Agent": "pricone-re-synthesis"},
+            )
+            with urllib.request.urlopen(req, timeout=5) as res:
+                data: dict[str, object] = json.loads(res.read())
+            tag = str(data.get("tag_name", "")).lstrip("v")
+            if tag and tag != current:
+                self.update_found.emit(tag)
+        except Exception:
+            pass  # 取得失敗はサイレントに無視
+
+
+class _UpdateDialog(QMessageBox):
+    """親ウィンドウ中央に追従するアップデート通知ダイアログ."""
+
+    def __init__(self, parent: object = None) -> None:
+        super().__init__(parent)  # type: ignore[arg-type]
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setStyleSheet(
+            "QMessageBox { background-color: #2e2e2e; border: 2px solid #ffcc44; } "
+            "QLabel { color: #eee; background: transparent; } "
+            "QPushButton { background-color: #3a3a3a; color: #eee; border: 1px solid #666; "
+            "border-radius: 3px; padding: 5px 16px; min-width: 60px; } "
+            "QPushButton:hover { background-color: #4a4a4a; } "
+            "QPushButton:default { border-color: #ffcc44; color: #ffcc44; } "
+        )
+
+    def showEvent(self, event: object) -> None:
+        super().showEvent(event)  # type: ignore[arg-type]
+        self.setMinimumWidth(340)
+        self._follow_timer = QTimer(self)
+        self._follow_timer.setInterval(100)
+        self._follow_timer.timeout.connect(self._follow_parent)
+        self._follow_timer.start()
+        self._follow_parent()
+
+    def _follow_parent(self) -> None:
+        parent = self.parent()
+        if parent is not None and hasattr(parent, "geometry"):
+            geo = parent.geometry()  # type: ignore[union-attr]
+            self.move(
+                geo.x() + (geo.width() - self.width()) // 2,
+                geo.y() + (geo.height() - self.height()) // 2,
+            )
+
+
 class MainWindow(QMainWindow):
     """究極錬成ツール メインウィンドウ."""
 
@@ -121,6 +187,11 @@ class MainWindow(QMainWindow):
         self._hotkey_timer = QTimer(self)
         self._hotkey_timer.setInterval(150)
         self._hotkey_timer.timeout.connect(self._check_global_esc)
+
+        # アップデートチェック（バックグラウンド）
+        self._update_checker = UpdateChecker(self)
+        self._update_checker.update_found.connect(self._on_update_found)
+        self._update_checker.start()
 
     # ------------------------------------------------------------------
     # 初期化
@@ -290,7 +361,13 @@ class MainWindow(QMainWindow):
             self._total_count_label.fontMetrics().horizontalAdvance(_total_max) + 8
         )
 
+        self._update_label = QLabel()
+        self._update_label.setOpenExternalLinks(False)
+        self._update_label.setVisible(False)
+        self._update_label.linkActivated.connect(self._on_update_label_clicked)
+
         self._status_bar.addWidget(self._state_label, 1)
+        self._status_bar.addPermanentWidget(self._update_label)
         self._status_bar.addPermanentWidget(self._count_status_label)
         self._status_bar.addPermanentWidget(self._total_count_label)
 
@@ -316,6 +393,36 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------------
     # スロット
     # ------------------------------------------------------------------
+
+    @pyqtSlot(str)
+    def _on_update_found(self, latest: str) -> None:
+        """新バージョン検出時にステータスバーへ通知を表示し、ダイアログで案内する."""
+        self._update_label.setText(
+            f'<a href="#" style="color: #ffcc44;">v{latest} が利用可能です</a>'
+        )
+        self._update_label.setVisible(True)
+
+        msg = _UpdateDialog(self)
+        msg.setText(f"新バージョン v{latest} が利用可能です。")
+        msg.setInformativeText("ダウンロードページを開きますか？")
+        msg.setStandardButtons(
+            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
+        )
+        msg.setDefaultButton(QMessageBox.StandardButton.Ok)
+        msg.button(QMessageBox.StandardButton.Ok).setText("開く")
+        msg.button(QMessageBox.StandardButton.Cancel).setText("後で")
+        winsound.MessageBeep(winsound.MB_ICONASTERISK)
+        self._capture_timer.stop()
+        try:
+            if msg.exec() == QMessageBox.StandardButton.Ok:
+                QDesktopServices.openUrl(QUrl(_RELEASES_URL))
+        finally:
+            self._capture_timer.start()
+
+    @pyqtSlot(str)
+    def _on_update_label_clicked(self, _: str) -> None:
+        """更新通知リンククリック時にダウンロードページを開く."""
+        QDesktopServices.openUrl(QUrl(_RELEASES_URL))
 
     @pyqtSlot()
     def _on_start(self) -> None:

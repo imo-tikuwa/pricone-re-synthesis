@@ -13,3 +13,4 @@ build/
 *.npz
 logs/
 .claude/
+src/_version.py

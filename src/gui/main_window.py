@@ -135,7 +135,13 @@ class MainWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         """UI レイアウトを構築する."""
-        self.setWindowTitle("PrincessConnectReDive 究極錬成 - 自動化ツール")
+        try:
+            from src._version import __version__
+
+            _title = f"PrincessConnectReDive 究極錬成 - 自動化ツール v{__version__}"
+        except ImportError:
+            _title = "PrincessConnectReDive 究極錬成 - 自動化ツール (local)"
+        self.setWindowTitle(_title)
         # 最大化ボタンを無効化（Windows では MSWindowsFixedSizeDialogHint も必要）
         self.setWindowFlags(
             (self.windowFlags() & ~Qt.WindowType.WindowMaximizeButtonHint)

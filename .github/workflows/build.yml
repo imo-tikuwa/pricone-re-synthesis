@@ -43,6 +43,12 @@ jobs:
           pip install uv
           uv pip install --system nuitka opencv-python PyQt6 pywin32 numpy pillow
 
+      - name: Generate _version.py
+        if: steps.check.outputs.skip == 'false'
+        run: |
+          $pyver = "${{ steps.check.outputs.tag }}".TrimStart('v')
+          Set-Content -Path src/_version.py -Value "__version__ = `"$pyver`"" -Encoding utf8
+
       - name: Build templates npz
         if: steps.check.outputs.skip == 'false'
         run: python tools/build_templates.py
@@ -68,7 +74,7 @@ jobs:
         if: steps.check.outputs.skip == 'false'
         run: |
           Rename-Item -Path dist/main.dist -NewName ultimate-synthesis
-          Compress-Archive -Path dist/ultimate-synthesis -DestinationPath ultimate-synthesis.zip
+          Compress-Archive -Path dist/ultimate-synthesis -DestinationPath ultimate-synthesis-${{ steps.check.outputs.tag }}.zip
 
       - name: Setup Node.js
         if: steps.check.outputs.skip == 'false'
@@ -89,5 +95,5 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.check.outputs.tag }}
-          files: ultimate-synthesis.zip
+          files: ultimate-synthesis-${{ steps.check.outputs.tag }}.zip
           body_path: release_notes.md

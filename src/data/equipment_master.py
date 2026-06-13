@@ -6,7 +6,9 @@
 ■ ID 体系
   W####  : EX★5 武器（通常）   W0001〜W0011
   W1###  : EX★5 特殊武器        W1001〜W1004
-  A####  : EX★5 防具            A0001〜A0004
+  A####  : EX★5 防具            A0001〜A0008
+           A0001〜A0004: 通常防具（属性なし）
+           A0005〜A0008: 属性防具（各 5 属性 → id サフィックス: _fire/_water/_wind/_light/_dark）
   C####  : EX★5 属性アクセサリー C0001〜C0010
            （各 5 属性 → id サフィックス: _fire/_water/_wind/_light/_dark）
   C1###  : EX★5 特殊アクセサリー C1001〜C1005（属性なし）
@@ -126,6 +128,27 @@ _POOL_ARMOR_MAG: list[StatPoolEntry] = [
     StatPoolEntry("mag_pen", _PEN_STD),
 ]
 
+# 属性防具（A1001〜A1004）値スケールはアクセサリーと同一
+# HP/防御: 0.4%〜2%（_C_ATK と同値）/ 攻撃/クリティカル: 0.25%〜1.25%（_C_DEF と同値）
+
+# 物理系属性防具（A0005 衣アルファレディアンス, A0006 鎧アルファレゾルテ）
+_POOL_ARMOR_ELEM_PHYS: list[StatPoolEntry] = [
+    StatPoolEntry("hp", _C_ATK),
+    StatPoolEntry("phys_atk", _C_DEF),
+    StatPoolEntry("phys_def", _C_ATK),
+    StatPoolEntry("mag_def", _C_ATK),
+    StatPoolEntry("phys_crit", _C_DEF),
+]
+
+# 魔法系属性防具（A0007 絹アルファチェリッシュ, A0008 玄アルファエレガンス）
+_POOL_ARMOR_ELEM_MAG: list[StatPoolEntry] = [
+    StatPoolEntry("hp", _C_ATK),
+    StatPoolEntry("phys_def", _C_ATK),
+    StatPoolEntry("mag_atk", _C_DEF),
+    StatPoolEntry("mag_def", _C_ATK),
+    StatPoolEntry("mag_crit", _C_DEF),
+]
+
 # ===========================================================================
 # アクセサリー stat_pool
 #
@@ -174,6 +197,33 @@ _ELEMENTS: list[tuple[str, str]] = [
     ("light", "光"),
     ("dark", "闇"),
 ]
+
+
+def _make_element_armors(
+    base_id: str,
+    name_suffix: str,
+    stat_pool: list[StatPoolEntry],
+) -> list[EquipmentData]:
+    """5 属性分の属性防具 EquipmentData リストを生成する.
+
+    Args:
+        base_id: 属性サフィックスなしのベース ID（例: "A1001"）。
+        name_suffix: 属性文字の後に続く装備名部分（例: "衣アルファレディアンス"）。
+                     display_name は "黎明{属性漢字}{name_suffix}" となる。
+        stat_pool: この装備グループの抽選対象ステータスリスト。
+
+    """
+    return [
+        EquipmentData(
+            id=f"{base_id}_{elem_key}",
+            display_name=f"黎明{elem_kanji}{name_suffix}",
+            template=f"equipment/armor/{base_id}.png",
+            type=EquipmentType.ARMOR,
+            stat_pool=stat_pool,
+            element=elem_key,
+        )
+        for elem_key, elem_kanji in _ELEMENTS
+    ]
 
 
 def _make_element_charms(
@@ -358,6 +408,14 @@ EQUIPMENT_MASTER: list[EquipmentData] = [
         type=EquipmentType.ARMOR,
         stat_pool=_POOL_ARMOR_MAG,
     ),
+    # =========================================================================
+    # EX★5 属性防具  A0005〜A0008 × 5 属性
+    # A0005〜A0006: 物理系 / A0007〜A0008: 魔法系
+    # =========================================================================
+    *_make_element_armors("A0005", "衣アルファレディアンス", _POOL_ARMOR_ELEM_PHYS),
+    *_make_element_armors("A0006", "鎧アルファレゾルテ", _POOL_ARMOR_ELEM_PHYS),
+    *_make_element_armors("A0007", "絹アルファチェリッシュ", _POOL_ARMOR_ELEM_MAG),
+    *_make_element_armors("A0008", "玄アルファエレガンス", _POOL_ARMOR_ELEM_MAG),
     # =========================================================================
     # EX★5 属性アクセサリー  C0001〜C0010 × 5 属性
     #

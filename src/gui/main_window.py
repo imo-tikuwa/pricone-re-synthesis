@@ -8,7 +8,7 @@ import urllib.request
 import winsound
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import QThread, Qt, QTimer, QUrl, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import Qt, QThread, QTimer, QUrl, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QDesktopServices, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -405,9 +405,7 @@ class MainWindow(QMainWindow):
         msg = _UpdateDialog(self)
         msg.setText(f"新バージョン v{latest} が利用可能です。")
         msg.setInformativeText("ダウンロードページを開きますか？")
-        msg.setStandardButtons(
-            QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
-        )
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         msg.setDefaultButton(QMessageBox.StandardButton.Ok)
         msg.button(QMessageBox.StandardButton.Ok).setText("開く")
         msg.button(QMessageBox.StandardButton.Cancel).setText("後で")
@@ -884,6 +882,8 @@ class MainWindow(QMainWindow):
 
         if eq.type == EquipmentType.WEAPON and eq.id in WEAPON_SPECIAL_IDS:
             category = "weapon_special"
+        elif eq.type == EquipmentType.ARMOR and eq.element is not None:
+            category = "armor_element"
         else:
             category = str(eq.type)
 

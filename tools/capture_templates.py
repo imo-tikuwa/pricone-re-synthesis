@@ -311,16 +311,17 @@ def equipment_capture_mode(frame: np.ndarray, equipment_id: str) -> int:
                                    → templates/equipment/charm/<BASE_ID>.png
     """
     from src.data.equipment_master import EQUIPMENT_MAP
+    from src.data.models import EquipmentType
 
     eid = equipment_id.upper()
 
-    # 属性アクセサリーのベース ID 検索（C0001 → C0001_fire などを参照）
+    # 属性装備のベース ID 検索（C0001 / A0005 → _fire などを参照）
     eq = EQUIPMENT_MAP.get(eid)
     is_elemental_base = False
     base_id = eid
 
     if eq is None:
-        # "C0001" のように element サフィックスなしで渡された場合の検索
+        # "C0001" / "A0005" のように element サフィックスなしで渡された場合の検索
         for full_id, candidate in EQUIPMENT_MAP.items():
             if full_id.startswith(eid + "_") and candidate.element is not None:
                 eq = candidate
@@ -338,17 +339,24 @@ def equipment_capture_mode(frame: np.ndarray, equipment_id: str) -> int:
                 b = full_id.rsplit("_", 1)[0]
                 if b not in seen_bases:
                     seen_bases.add(b)
+                    kind = "属性防具" if e.type == EquipmentType.ARMOR else "属性アクセサリー"
                     suffix = e.display_name[3:]  # "黎明火輪アルファ..." → "火輪アルファ..."
-                    print(f"  {b:8s}  {suffix}  (属性アクセサリー)")
+                    print(f"  {b:8s}  {suffix}  ({kind})")
             else:
                 print(f"  {full_id:8s}  {e.display_name}")
         return 1
 
     if is_elemental_base or (eq.element is not None):
-        # 属性アクセサリー: カタカナ名 ROI を使用
+        # 属性装備（アクセサリー・防具）: カタカナ名 ROI を使用
         roi = _load_roi_rect("s1_equipment_charm_name")
-        out_path = _TEMPLATES_DIR / "equipment" / "charm" / f"{base_id}.png"
-        label = f"属性アクセサリー {base_id} カタカナ名  例: {eq.display_name}"
+        if eq.type == EquipmentType.ARMOR:
+            type_dir = "armor"
+            kind_label = "属性防具"
+        else:
+            type_dir = "charm"
+            kind_label = "属性アクセサリー"
+        out_path = _TEMPLATES_DIR / "equipment" / type_dir / f"{base_id}.png"
+        label = f"{kind_label} {base_id} カタカナ名  例: {eq.display_name}"
     else:
         # 武器・防具・特殊アクセサリー: 装備名全体 ROI を使用
         roi = _load_roi_rect("s1_equipment_name")

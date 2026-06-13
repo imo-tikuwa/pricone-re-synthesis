@@ -737,6 +737,8 @@ class StateMachineWorker(QThread):
 
         if equipment.type == EquipmentType.WEAPON and equipment.id in WEAPON_SPECIAL_IDS:
             category = "weapon_special"
+        elif equipment.type == EquipmentType.ARMOR and equipment.element is not None:
+            category = "armor_element"
         else:
             category = str(equipment.type)
 

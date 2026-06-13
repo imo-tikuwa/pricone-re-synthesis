@@ -71,11 +71,11 @@ class EquipmentDetector:
 
     def __init__(self, matcher: TemplateMatcher) -> None:
         self._matcher = matcher
-        # base_id → EquipmentData（属性なし代表）: C0001〜C0010 の先頭属性で代表
         self._charm_bases: dict[str, str] = self._build_charm_base_map()
+        self._element_armor_bases: dict[str, str] = self._build_element_armor_map()
 
     def _build_charm_base_map(self) -> dict[str, str]:
-        """テンプレートキー → base_id のマッピングを構築する.
+        """テンプレートキー → base_id のマッピングを構築する（属性アクセサリー用）.
 
         C0001_fire〜C0010_dark のうち、base_id ごとに 1 エントリだけ保持する。
         """
@@ -84,6 +84,20 @@ class EquipmentDetector:
             if eq.type == EquipmentType.CHARM and eq.element is not None:
                 base_id = eq.id.rsplit("_", 1)[0]  # "C0001_fire" → "C0001"
                 tmpl_key = f"equipment/charm/{base_id}"
+                if tmpl_key not in seen:
+                    seen[tmpl_key] = base_id
+        return seen
+
+    def _build_element_armor_map(self) -> dict[str, str]:
+        """テンプレートキー → base_id のマッピングを構築する（属性防具用）.
+
+        A1001_fire〜A1004_dark のうち、base_id ごとに 1 エントリだけ保持する。
+        """
+        seen: dict[str, str] = {}  # tmpl_key → base_id
+        for eq in EQUIPMENT_MAP.values():
+            if eq.type == EquipmentType.ARMOR and eq.element is not None:
+                base_id = eq.id.rsplit("_", 1)[0]  # "A1001_fire" → "A1001"
+                tmpl_key = f"equipment/armor/{base_id}"
                 if tmpl_key not in seen:
                     seen[tmpl_key] = base_id
         return seen
@@ -116,6 +130,27 @@ class EquipmentDetector:
                     )
                     return eq
 
+        # --- ステップ 1b: 属性防具検出 ---
+        base_id = self._match_element_armor_name(frame)
+        if base_id is not None:
+            element = self._match_element(frame)
+            if element is not None:
+                eq_id = f"{base_id}_{element}"
+                eq = EQUIPMENT_MAP.get(eq_id)
+                if eq is not None:
+                    logger.info(
+                        "装備検出: %s (base=%s, element=%s)", eq.display_name, base_id, element
+                    )
+                    return eq
+            # 属性不明: 最初のバリアントを返す（暫定）
+            for suffix in ("fire", "water", "wind", "light", "dark"):
+                eq = EQUIPMENT_MAP.get(f"{base_id}_{suffix}")
+                if eq is not None:
+                    logger.warning(
+                        "装備 %s を検出しましたが属性不明のため %s で代替します", base_id, eq.id
+                    )
+                    return eq
+
         # --- ステップ 2: 武器・防具・特殊アクセサリー検出 ---
         return self._match_full_name(frame)
 
@@ -137,6 +172,25 @@ class EquipmentDetector:
 
         if best_base_id:
             logger.debug("チャーム名マッチ: base=%s score=%.3f", best_base_id, best_score)
+        return best_base_id
+
+    def _match_element_armor_name(self, frame: npt.NDArray[np.uint8]) -> str | None:
+        """s1_equipment_charm_name ROI で属性防具を特定し base_id を返す."""
+        if S1_EQUIPMENT_CHARM_NAME_ROI[2] <= 0 or S1_EQUIPMENT_CHARM_NAME_ROI[3] <= 0:
+            return None
+
+        best_score = 0.0
+        best_base_id: str | None = None
+        for tmpl_key, base_id in self._element_armor_bases.items():
+            matched, score, _ = self._matcher.match(
+                frame, tmpl_key, S1_EQUIPMENT_CHARM_NAME_ROI, _TM_EQUIP
+            )
+            if matched and score > best_score:
+                best_score = score
+                best_base_id = base_id
+
+        if best_base_id:
+            logger.debug("属性防具名マッチ: base=%s score=%.3f", best_base_id, best_score)
         return best_base_id
 
     def _match_element(self, frame: npt.NDArray[np.uint8]) -> str | None:

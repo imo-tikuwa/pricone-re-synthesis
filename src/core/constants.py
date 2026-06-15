@@ -155,6 +155,7 @@ class State(StrEnum):
     ERROR_WRONG_SCREEN = "ERROR_WRONG_SCREEN"
     ERROR_INSUFFICIENT = "ERROR_INSUFFICIENT"
     ERROR_TIMEOUT = "ERROR_TIMEOUT"
+    ERROR_DETECTION_FAILED = "ERROR_DETECTION_FAILED"
 
 
 # 状態の表示名（GUI ステータスバー用）
@@ -184,6 +185,7 @@ STATE_DISPLAY_NAMES: dict[str, str] = {
     State.ERROR_WRONG_SCREEN: "エラー: 画面外",
     State.ERROR_INSUFFICIENT: "エラー: リソース不足",
     State.ERROR_TIMEOUT: "エラー: タイムアウト",
+    State.ERROR_DETECTION_FAILED: "エラー: 未検出",
 }
 
 # コスト表 (錬成枠数) → (マナ消費, EX錬成Pt消費)

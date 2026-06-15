@@ -278,6 +278,12 @@ class MainWindow(QMainWindow):
         self._min_ex_pt_combo.addItem("制限なし", userData=0)
         self._last_ex_pt_combo_base: int = -1
         interrupt_row.addWidget(self._min_ex_pt_combo)
+        self._stop_on_undetected_cb = QCheckBox("錬成結果に「未検出」が発生したら停止")
+        self._stop_on_undetected_cb.setChecked(True)
+        self._stop_on_undetected_cb.setToolTip(
+            "効果値が読み取れなかった枠が1つでもあれば自動停止してエラーダイアログを表示する"
+        )
+        interrupt_row.addWidget(self._stop_on_undetected_cb)
         interrupt_row.addStretch()
         goal_outer.addLayout(interrupt_row)
 
@@ -477,6 +483,7 @@ class MainWindow(QMainWindow):
             goal=goal,
             capture_interval=interval,
             initial_state=initial,
+            stop_on_undetected=self._stop_on_undetected_cb.isChecked(),
         )
         self._worker.state_changed.connect(self._on_state_changed)
         self._worker.synthesis_count_changed.connect(self._on_synthesis_count)

@@ -86,6 +86,7 @@ class StateMachineWorker(QThread):
         goal: GoalCondition,
         capture_interval: float = POLL_INTERVAL_DEFAULT,
         initial_state: State = State.CHECKING_SCREEN,
+        stop_on_undetected: bool = False,
     ) -> None:
         super().__init__()
         self._capture = capture
@@ -95,6 +96,7 @@ class StateMachineWorker(QThread):
         self._goal = goal
         self._capture_interval = capture_interval
         self._initial_state = initial_state
+        self._stop_on_undetected = stop_on_undetected
 
         self._state = State.IDLE
         self._running = False
@@ -176,6 +178,7 @@ class StateMachineWorker(QThread):
                 State.ERROR_WRONG_SCREEN,
                 State.ERROR_INSUFFICIENT,
                 State.ERROR_TIMEOUT,
+                State.ERROR_DETECTION_FAILED,
             }:
                 break
 
@@ -540,6 +543,22 @@ class StateMachineWorker(QThread):
                 slot.value or "(未検出)",
                 slot.is_locked,
             )
+
+        if self._stop_on_undetected:
+            failed_slots = [
+                s.slot_index
+                for s in result_substats
+                if not s.is_locked and s.stat is not None and s.value is None
+            ]
+            if failed_slots:
+                logger.error("効果値未検出 (枠 %s) → 停止します", failed_slots)
+                self._transition(State.ERROR_DETECTION_FAILED)
+                self.error_occurred.emit(
+                    f"錬成結果の効果値が未検出でした（枠 {failed_slots}）。\n\n"
+                    "テンプレート不足またはゲーム画面の異常が考えられます。\n"
+                    "ログを確認してください。"
+                )
+                return
 
         eval_result, new_matches = self._evaluator.evaluate(result_substats)
 

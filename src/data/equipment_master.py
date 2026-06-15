@@ -5,7 +5,7 @@
 
 ■ ID 体系
   W####  : EX★5 武器（通常）   W0001〜W0011
-  W1###  : EX★5 特殊武器        W1001〜W1004
+  W1###  : EX★5 特殊武器        W1001〜W1005
   A####  : EX★5 防具            A0001〜A0008
            A0001〜A0004: 通常防具（属性なし）
            A0005〜A0008: 属性防具（各 5 属性 → id サフィックス: _fire/_water/_wind/_light/_dark）
@@ -341,11 +341,12 @@ EQUIPMENT_MASTER: list[EquipmentData] = [
         stat_pool=_POOL_WEAPON_PHYS,
     ),
     # =========================================================================
-    # EX★5 特殊武器  W1001〜W1004
+    # EX★5 特殊武器  W1001〜W1005
     # W1001: mag_pen が全レベル抽選対象（値 1〜5）
     # W1002: phys_pen が全レベル抽選対象（値 1〜5）
     # W1003: phys_pen が全レベル抽選対象（値 1〜5）※ W1002 と同パターン
     # W1004: mag_pen が全レベル抽選対象（値 1〜5）※ W1001 と同パターン
+    # W1005: phys_pen が全レベル抽選対象（値 1〜5）※ W1002 と同パターン
     # =========================================================================
     EquipmentData(
         id="W1001",
@@ -374,6 +375,13 @@ EQUIPMENT_MASTER: list[EquipmentData] = [
         template="equipment/weapon/W1004.png",
         type=EquipmentType.WEAPON,
         stat_pool=_POOL_W1001,
+    ),
+    EquipmentData(
+        id="W1005",
+        display_name="ガガン・カ・チャンド",
+        template="equipment/weapon/W1005.png",
+        type=EquipmentType.WEAPON,
+        stat_pool=_POOL_W1002,
     ),
     # =========================================================================
     # EX★5 防具  A0001〜A0004

@@ -38,13 +38,18 @@ export default defineConfig(({ mode }) => ({
     host: true,
   },
   build: {
-    minify: 'esbuild',
-  },
-  // プロダクションビルド時のみconsole.*とdebuggerを除去
-  esbuild:
-    mode === 'production'
+    // プロダクションビルド時のみconsole.*とdebuggerを除去
+    rolldownOptions: mode === 'production'
       ? {
-          drop: ['console', 'debugger'],
+          output: {
+            minify: {
+              compress: {
+                dropConsole: true,
+                dropDebugger: true,
+              },
+            },
+          },
         }
-      : {},
+      : undefined,
+  },
 }))

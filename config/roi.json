@@ -224,11 +224,11 @@
     },
     {
       "id": "btn_synthesize",
-      "description": "「錬成」青ボタン（S1）",
+      "description": "「錬成」青ボタン（S1）※カスタム錬成ボタン追加に伴い幅縮小（214→154）",
       "rect": [
         920,
         543,
-        214,
+        154,
         60
       ],
       "template": "ui/buttons/s1_synthesize.png",
@@ -237,11 +237,11 @@
     },
     {
       "id": "btn_synthesize_disabled",
-      "description": "「錬成」ボタン非活性状態（全枠ロック済み装備選択時）",
+      "description": "「錬成」ボタン非活性状態（全枠ロック済み装備選択時）※カスタム錬成ボタン追加に伴い幅縮小（214→154）",
       "rect": [
         920,
         543,
-        214,
+        154,
         60
       ],
       "template": "ui/buttons/s1_synthesize_disabled.png",
@@ -330,10 +330,10 @@
       "id": "modal_text_resynth",
       "description": "S2a 2行目テキスト（再錬成確認識別）",
       "rect": [
-        471,
-        179,
-        326,
-        26
+        614,
+        93,
+        447,
+        23
       ],
       "template": "ui/s2a_modal_text_resynth.png",
       "screen": "S2a",
@@ -357,7 +357,7 @@
       "description": "「OK」青ボタン（S2a 再錬成確認） ※S1a と同サイズの可能性あるが念のため別管理",
       "rect": [
         754,
-        558,
+        622,
         70,
         34
       ],

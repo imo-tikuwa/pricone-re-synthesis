@@ -1,48 +1,21 @@
-# .
+# pricone-re-synthesis — web
 
-This template should help get you started developing with Vue 3 in Vite.
+> [!IMPORTANT]
+> このディレクトリの Web ページ（GitHub Pages 公開）はメンテナンスを終了し、リポジトリごとアーカイブされました。
+> 経緯は [ルート README](../README.md) を参照してください。
 
-## Recommended IDE Setup
+プリコネR「究極錬成自動化ツール」の紹介・ダウンロードページ（Vue 3 + Vite）。
+`imo-tikuwa/lab` のサブモジュールとして GitHub Pages で公開していましたが、現在は更新を停止しています。
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 技術スタック
 
-## Recommended Browser Setup
+- Vue 3 + Vite + TypeScript
+- PrimeVue / Tailwind CSS
+- Pinia
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+## ローカルでの起動（参考）
 
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
 ```
